@@ -3,8 +3,7 @@
 Created on Thu Oct  3 11:07:49 2019
 
 @author: EJMorales
-AOY - added cropping: DoG filtering using FFT. 
-AOY - simplified to 1 FFT and 1 ifft. Faster. 
+AOY - added cropping
 """
 import glob
 import numpy as np
@@ -31,6 +30,44 @@ crpSize = 900
 #%%   
 #label = 0
 
+def hist_match_tonorm(source):
+    """
+    Adjust the pixel values of a grayscale image such that its histogram
+    matches a normal distribution
+
+    Arguments:
+    -----------
+        source: np.ndarray
+            Image to transform; the histogram is computed over the flattened
+            array
+    Returns:
+    -----------
+        matched: np.ndarray
+            The transformed output image
+    """
+    from scipy import stats
+
+    oldshape = source.shape
+    source = source.ravel()
+
+    # get the set of unique pixel values and their corresponding indices and
+    # counts
+    s_values, bin_idx, s_counts = np.unique(source, return_inverse=True,
+                                            return_counts=True)
+
+    # take the cumsum of the counts and normalize by the number of pixels to
+    # get the empirical cumulative distribution functions for the source and
+    # template images (maps pixel value --> quantile)
+    s_quantiles = np.cumsum(s_counts).astype(np.float64)
+    s_quantiles /= s_quantiles[-1]
+
+    t_values = np.arange(0,255)
+    t_quantiles = stats.norm.cdf(t_values, loc=128, scale=40)
+    # interpolate linearly to find the pixel values in the template image
+    # that correspond most closely to the quantiles in the source image
+    interp_t_values = np.interp(s_quantiles, t_quantiles, t_values)
+
+    return interp_t_values[bin_idx].reshape(oldshape) 
 
 #%%
 def loadAndLabel_Rotate(imageFolder, images, imageNames, labels, label):
