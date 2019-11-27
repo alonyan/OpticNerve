@@ -123,6 +123,11 @@ def loadAndLabel_Rotate(imageFolder, images, imageNames, labels, label):
         crpcenter = crpcenter.astype('int16')
         pix = pix[np.max((crpcenter[0]-crpSize,0)):np.min((crpcenter[0]+crpSize,imsize[0])),np.max((crpcenter[1]-crpSize,0)):np.min((crpcenter[1]+crpSize,imsize[1])),:]
         
+        pix[:,:,0] = hist_match_tonorm(pix[:,:,0])
+        pix[:,:,1] = hist_match_tonorm(pix[:,:,1])
+        pix[:,:,2] = hist_match_tonorm(pix[:,:,2])
+        
+        
         img_og = Image.fromarray(pix.astype('uint8'), 'RGB')
 
         img_og = img_og.resize(size)    
