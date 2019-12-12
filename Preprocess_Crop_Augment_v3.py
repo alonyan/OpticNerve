@@ -12,7 +12,6 @@ from PIL import Image
 import keras.preprocessing as kp #import image
 import joblib
 from PIL import ImageEnhance
-from skimage.filters import threshold_triangle
 #import matplotlib.pyplot as plt
  
 ############################################
@@ -138,6 +137,25 @@ def v2s(v_hat: np.ndarray) -> np.ndarray:
     s[0, 0] = 0
     return s
 #%%
+def trithresh(pix, nbins=256):
+    imhist, edges = np.histogram(pix[:],nbins)
+    centers = (edges[1:]+edges[:-1])/2
+    
+    a = centers[np.argmax(np.cumsum(imhist)/np.sum(imhist)>0.9999)] #brightest
+    b = centers[np.argmax(imhist)] #most probable
+    h = np.max(imhist) #response at most probable
+    
+    m = h/(b-a)
+    
+    x1=np.arange(0,a-b, 0.1)
+    y1=np.interp(x1+b,centers,imhist)
+    
+    L = (m**2+1)*((y1-h)*(1/(m**2-1))-x1*m/(m**2-1))**2 #Distance between line m*x+b and curve y(x) maths!
+    
+    triThresh = b+x1[np.argmax(L)]
+    return triThresh
+
+#%%
 def loadAndLabel_Rotate(imageFolder, images, imageNames, labels, label):
     # Excluded images
     total = len(glob.glob(imageFolder))
@@ -193,7 +211,7 @@ def loadAndLabel_Rotate(imageFolder, images, imageNames, labels, label):
         img_smooth = (img_smooth-np.min(img_smooth))/(np.max(img_smooth)-np.min(img_smooth))
 
         #mask and create local density of ridges
-        mask = (img_ridges>threshold_triangle(img_ridges))
+        mask = (img_ridges>trithresh(img_ridges))
         mask_fft = np.fft.fftshift(np.fft.fft2(mask))
 
         kernel = np.exp(-0.2*radialDist**2)
