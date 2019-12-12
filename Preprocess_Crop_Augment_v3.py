@@ -12,6 +12,8 @@ from PIL import Image
 import keras.preprocessing as kp #import image
 import joblib
 from PIL import ImageEnhance
+from skimage.util import invert
+from skimage.color import rgb2gray
 #import matplotlib.pyplot as plt
  
 ############################################
@@ -185,7 +187,7 @@ def loadAndLabel_Rotate(imageFolder, images, imageNames, labels, label):
         pix = pix[np.min(nonZero[:,0])+edgesize:np.max(nonZero[:,0])-edgesize, np.min(nonZero[:,1])+edgesize:np.max(nonZero[:,1])-edgesize,:]
          
         # fourier low-pass-filter for illumination correction
-        p,s =  periodic_smooth_decomp(np.invert(pix[:,:,1]))
+        p,s =  periodic_smooth_decomp(invert(rgb2gray(pix)))
         img_fft = np.fft.fft2(p)      
         img_fft = np.fft.fftshift(img_fft)
         imsize = pix.shape[:2]
