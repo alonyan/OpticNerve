@@ -12,7 +12,7 @@ from PIL import Image
 import keras.preprocessing as kp #import image
 import joblib
 from PIL import ImageEnhance
-from skimage.filters import threshold_li
+from skimage.filters import threshold_triangle
 #import matplotlib.pyplot as plt
  
 ############################################
@@ -193,7 +193,7 @@ def loadAndLabel_Rotate(imageFolder, images, imageNames, labels, label):
         img_smooth = (img_smooth-np.min(img_smooth))/(np.max(img_smooth)-np.min(img_smooth))
 
         #mask and create local density of ridges
-        mask = (img_ridges>threshold_li(img_ridges))
+        mask = (img_ridges>threshold_triangle(img_ridges))
         mask_fft = np.fft.fftshift(np.fft.fft2(mask))
 
         kernel = np.exp(-0.2*radialDist**2)
