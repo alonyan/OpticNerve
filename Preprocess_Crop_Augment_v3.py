@@ -183,7 +183,7 @@ def loadAndLabel_Rotate(imageFolder, images, imageNames, labels, label):
         
         #First, crop away padding, This would automatically remove what is obviously BG
         nonZero = np.argwhere(pix[:,:,1]>5);
-        edgesize = 3
+        edgesize = 2
         pix = pix[np.min(nonZero[:,0])+edgesize:np.max(nonZero[:,0])-edgesize, np.min(nonZero[:,1])+edgesize:np.max(nonZero[:,1])-edgesize,:]
          
         # fourier low-pass-filter for illumination correction
